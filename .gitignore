@@ -1,0 +1,2 @@
+# BlockMemoryAgent 会话工作目录（快照/临时产物，不入库）
+.bma/
