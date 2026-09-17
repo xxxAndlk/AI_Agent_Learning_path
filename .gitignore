@@ -1,2 +1,6 @@
 # BlockMemoryAgent 会话工作目录（快照/临时产物，不入库）
 .bma/
+
+# RAG 问答机器人（Go）：API Key 与向量库数据不入库
+rag_qa_bot_go/.env
+rag_qa_bot_go/data/
