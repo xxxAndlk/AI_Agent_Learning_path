@@ -1,0 +1,52 @@
+# .dockerignore
+# Docker构建时忽略的文件
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 数据文件（按需挂载）
+data/docs/*
+data/processed/*
+!data/docs/.gitkeep
+
+# 日志
+logs/*.log
+
+# 环境变量
+.env
+.env.local
+
+# Git
+.git/
+.gitignore
+
+# 测试
+tests/
+.pytest_cache/
+
+# 文档
+*.md
+!README.md
+
+# Streamlit
+.streamlit/config.toml

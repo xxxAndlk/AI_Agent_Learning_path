@@ -1,0 +1,32 @@
+// settings.json 配置示例
+{
+    // Python 解释器
+    "python.defaultInterpreterPath": "C:/Python312/python.exe",
+    
+    // 格式化工具
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true,
+    "python.linting.mypyEnabled": true,
+    
+    // 格式化配置
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.black",
+    
+    // 类型检查
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true,
+    
+    // 测试
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": ["-v"],
+    
+    // 调试
+    "debug.console.fontSize": 14,
+    "python.terminal.launchArgs": ["-m", "IPython", "--no-autoindent"],
+    
+    // 保存时格式化
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    }
+}

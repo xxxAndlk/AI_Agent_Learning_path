@@ -1,0 +1,10 @@
+{
+  "type": "function",
+  "name": "函数名",
+  "description": "函数功能描述",
+  "parameters": {
+    "type": "object",
+    "properties": {...},
+    "required": [...]
+  }
+}

@@ -1,0 +1,43 @@
+# docker/docker-compose.yml
+# Docker Compose配置文件
+
+version: '3.8'
+
+services:
+  # RAG应用服务
+  rag-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      # 文档目录挂载
+      - ../data/docs:/app/data/docs
+      # 向量存储持久化
+      - ../data/processed:/app/data/processed
+      # 日志目录
+      - ../logs:/app/logs
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - STREAMLIT_SERVER_HEADLESS=true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 可选：Ollama本地LLM服务
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama-data:
+    driver: local
