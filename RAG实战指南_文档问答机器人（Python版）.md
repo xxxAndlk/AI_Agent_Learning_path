@@ -84,7 +84,7 @@ AI应用开发技术栈目录/
 │   ├── app.py            # Streamlit UI（步骤 8）
 │   ├── evaluate.py       # 评测（步骤 9）
 │   └── chroma_db/        # 向量库落盘目录（不提交到 git）
-├── 01.Python快速入门（Go开发者版）/
+├── 01.Python快速入门/
 └── ...
 ```
 
@@ -288,7 +288,7 @@ if __name__ == "__main__" and len(sys.argv) == 1:
 python ingest.py
 # 加载文件数：79
 # 总字符数：2,936,478
-#   - 01.Python快速入门（Go开发者版）/1.1_Python_vs_Go_关键差异速查.md（...）
+#   - 01.Python快速入门/1.1_Python入门与环境搭建.md（...）
 ```
 
 ### 2.4 检查点

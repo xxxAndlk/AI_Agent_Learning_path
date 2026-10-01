@@ -3,7 +3,7 @@
 [![Stars](https://img.shields.io/github/stars/xxxAndlk/AI_Agent_Learning_path?style=social)](https://github.com/xxxAndlk/AI_Agent_Learning_path/stargazers)
 [![Last Commit](https://img.shields.io/github/last-commit/xxxAndlk/AI_Agent_Learning_path?color=blue)](https://github.com/xxxAndlk/AI_Agent_Learning_path/commits/main)
 
-一个专为 **Go 开发者**设计，从基础到实战、系统化学习 **AI Agent (智能体) 开发**的完整路径指南。
+一个面向零基础读者，从基础到实战、系统化学习 **AI Agent (智能体) 开发**的完整路径指南。
 
 此项目以代码实践为核心，带你一步步掌握 Python、大语言模型 (LLM)、LangChain 框架、RAG 系统、向量数据库等前沿技术，并最终具备构建复杂 AI 应用和设计系统架构的能力。
 
@@ -11,7 +11,7 @@
 
 ## ✨ 项目特色
 
-*   **面向 Go 开发者**：第一章即为 Python 快速入门，专门为有 Go 经验的开发者设计，学习曲线平滑。
+*   **零基础友好**：第一章从安装 Python、搭建环境、写出第一个程序讲起，不懂编程也能跟着走。
 *   **体系化结构**：从 AI 底层数学基础到上层应用开发与系统架构，形成完整的知识闭环。
 *   **实战驱动**：第 12 章专设“实战项目”，提供可直接运行的完整代码。
 
@@ -23,7 +23,7 @@
 
 | 章节 | 目录 | 核心内容 |
 | :--- | :--- | :--- |
-| **1** | `1.Python快速入门（Go开发者版）` | 为 Go 开发者量身定制的 Python 速成课，快速掌握语法差异与核心特性。 |
+| **1** | `1.Python快速入门` | 零基础 Python 速成课：环境搭建、基础语法、惯用法、并发编程与常用标准库。 |
 | **2** | `2.AI底层基础` | 微积分、线性代数、概率论等入门 AI 必须掌握的数学与原理基础。 |
 | **3** | `3.LLM工程基础` | 大语言模型 (LLM) 的工作原理、提示词工程、API 调用等核心概念。 |
 | **4** | `4.LangChain框架详解` | 当前最流行的 LLM 应用开发框架，包括 Chains、Tools、Memory 等核心模块。 |
@@ -63,4 +63,4 @@ cd AI_Agent_Learning_path
 ```bash
 python -m venv venv
 source venv/bin/activate   # Windows 使用: venv\Scripts\activate
-pip install -r requirements.txt   # 如果项目提供了 requirements.txt；否则各章节内会有独立的依赖说明
+# 各实战章节开头会列出所需依赖，按章节说明逐个安装即可

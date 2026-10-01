@@ -1,0 +1,10 @@
+import os
+
+# 环境变量
+path = os.getenv("PATH")           # 获取环境变量
+os.environ["MY_VAR"] = "value"     # 设置环境变量
+
+# 文件路径操作
+full_path = os.path.join("dir", "file.txt")
+abs_path = os.path.abspath("./file.txt")
+exists = os.path.exists("file.txt")
