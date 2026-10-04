@@ -1,0 +1,40 @@
+# =========================================================
+# AI Agent 学习路径 · 全书依赖清单
+# =========================================================
+# 给新手的重要提醒：
+# 1. 不要一上来就全部安装！第 1 章只用 Python 自带的标准库，零依赖。
+# 2. 学到哪章再装哪章的包；每个 .py 文件头也标注了该课需要装什么。
+# 3. 下面只给“最低版本”，不锁死版本，pip 会自动取兼容的新版。
+# 4. Windows 若安装慢，可先执行：
+#    pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+#
+# 只想快速开始第 3 章？装这两个就够：
+#    pip install openai python-dotenv
+# =========================================================
+
+# --- 调用大模型（第 3 章起，核心）---
+openai>=1.40
+python-dotenv>=1.0
+
+# --- LangChain 框架（第 4 章）---
+langchain>=1.0
+langchain-core>=1.0
+langchain-openai>=0.3
+langchain-community>=0.3
+
+# --- RAG / 文档读取（第 5 章）---
+chromadb>=0.5
+pypdf>=4.0
+# faiss-cpu 在个别最新版 Python 上可能没有预编译包，装不上可先跳过（第 7 章才用）
+faiss-cpu>=1.8 ; python_version < "3.14"
+
+# --- 数据处理（第 9 章）---
+pandas>=2.0
+numpy>=1.26
+
+# --- 网络与应用开发（第 1、14 章）---
+requests>=2.31
+fastapi>=0.110
+uvicorn>=0.29
+streamlit>=1.35
+gradio>=4.0

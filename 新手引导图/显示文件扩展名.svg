@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="360" viewBox="0 0 680 360" font-family="Microsoft YaHei, PingFang SC, Segoe UI, sans-serif">
+  <rect width="680" height="360" fill="#ffffff"/>
+  <!-- 资源管理器窗口 -->
+  <rect x="24" y="24" width="632" height="300" rx="10" fill="#f7f7f8" stroke="#c9cdd4" stroke-width="1.5"/>
+  <rect x="24" y="24" width="632" height="42" rx="10" fill="#e8f0fe"/>
+  <rect x="24" y="50" width="632" height="16" fill="#e8f0fe"/>
+  <text x="46" y="51" font-size="15" fill="#1f2329" font-weight="bold">文件资源管理器</text>
+
+  <!-- 功能区路径 -->
+  <text x="60" y="92" font-size="14" fill="#5f6368">文件　主页　共享</text>
+  <rect x="196" y="74" width="56" height="26" rx="5" fill="#d2e3fc"/>
+  <text x="224" y="92" font-size="14" fill="#174ea6" text-anchor="middle" font-weight="bold">查看</text>
+  <text x="268" y="92" font-size="15" fill="#1f2329">→</text>
+  <text x="290" y="92" font-size="14" fill="#3c4043">显示</text>
+  <text x="330" y="92" font-size="15" fill="#1f2329">→</text>
+  <rect x="352" y="74" width="128" height="26" rx="5" fill="#ceead6"/>
+  <text x="416" y="92" font-size="14" fill="#137333" text-anchor="middle" font-weight="bold">☑ 文件扩展名</text>
+
+  <!-- 文件列表：错误示范 -->
+  <rect x="56" y="120" width="18" height="22" rx="2" fill="#fff" stroke="#9aa0a6"/>
+  <text x="58" y="137" font-size="13" fill="#5f6368">≡</text>
+  <text x="86" y="137" font-size="16" fill="#3c4043">env</text>
+  <text x="220" y="137" font-size="14" fill="#80868b">文本文件</text>
+  <text x="330" y="137" font-size="16" fill="#d93025" font-weight="bold">实际名字是 .env.txt ✗</text>
+
+  <!-- 正确示范 -->
+  <rect x="56" y="158" width="18" height="22" rx="2" fill="#fff" stroke="#9aa0a6"/>
+  <text x="58" y="175" font-size="13" fill="#5f6368">≡</text>
+  <text x="86" y="175" font-size="16" fill="#3c4043">.env</text>
+  <text x="220" y="175" font-size="14" fill="#80868b">ENV 文件</text>
+  <text x="330" y="175" font-size="16" fill="#188038" font-weight="bold">这才是 .env ✓</text>
+
+  <!-- 底部说明 -->
+  <rect x="56" y="220" width="568" height="80" rx="8" fill="#fef7e0" stroke="#f9ab00" stroke-width="1.5"/>
+  <text x="76" y="248" font-size="14" fill="#7c5c00" font-weight="bold">为什么要先打开“文件扩展名”？</text>
+  <text x="76" y="272" font-size="13.5" fill="#7c5c00">Windows 默认把后缀藏起来，你新建的“env 文本文档”，真实名字其实是 .env.txt。</text>
+  <text x="76" y="293" font-size="13.5" fill="#7c5c00">程序只认 .env，会读不到你的 Key。打开扩展名后再建文件，就不会出错。</text>
+</svg>

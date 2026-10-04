@@ -1,0 +1,18 @@
+{
+  "note": "baseline",
+  "params": {
+    "lr": 0.001,
+    "batch_size": 32
+  },
+  "data": {
+    "file": "corpus.txt",
+    "fingerprint": "7edb624d",
+    "n_items": 5120
+  },
+  "seed": 42,
+  "started_at": "2026-10-04 13:00:07",
+  "result": {
+    "accuracy": 0.7353,
+    "cost_min": 0.3
+  }
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="420" viewBox="0 0 680 420" font-family="Microsoft YaHei, PingFang SC, Segoe UI, sans-serif">
+  <rect x="0" y="0" width="680" height="420" fill="#ffffff"/>
+  <!-- 安装窗口 -->
+  <rect x="24" y="28" width="632" height="360" rx="10" fill="#f7f7f8" stroke="#c9cdd4" stroke-width="1.5"/>
+  <rect x="24" y="28" width="632" height="46" rx="10" fill="#e8f0fe"/>
+  <rect x="24" y="56" width="632" height="18" fill="#e8f0fe"/>
+  <text x="46" y="58" font-size="16" fill="#1f2329" font-weight="bold">Install Python 3.13 (64-bit) Setup</text>
+  <text x="628" y="58" font-size="18" fill="#5f6368" text-anchor="end">✕</text>
+
+  <!-- Install Now -->
+  <rect x="64" y="104" width="552" height="76" rx="4" fill="#ffffff" stroke="#d0d3d9"/>
+  <text x="92" y="140" font-size="22" fill="#1f2329">Install Now</text>
+  <text x="92" y="166" font-size="13" fill="#6b7075">Install for all users, default location</text>
+
+  <!-- Customize -->
+  <rect x="64" y="196" width="552" height="60" rx="4" fill="#ffffff" stroke="#d0d3d9"/>
+  <text x="92" y="233" font-size="19" fill="#1f2329">Customize installation</text>
+
+  <!-- 两个复选框 -->
+  <rect x="92" y="292" width="20" height="20" rx="3" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
+  <path d="M96 302 l5 5 l9 -10" fill="none" stroke="#1a73e8" stroke-width="2.5"/>
+  <text x="124" y="308" font-size="15" fill="#3c4043">Use admin privileges when installing py.exe</text>
+
+  <rect x="92" y="332" width="20" height="20" rx="3" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
+  <!-- 用红框把这一项圈住 -->
+  <rect x="82" y="322" width="356" height="40" rx="6" fill="none" stroke="#d93025" stroke-width="3"/>
+  <text x="124" y="348" font-size="15" fill="#3c4043">Add python.exe to PATH</text>
+
+  <!-- 红色提示 -->
+  <path d="M448 342 C 470 342, 470 300, 470 272" fill="none" stroke="#d93025" stroke-width="3"/>
+  <path d="M470 266 l -8 16 l 16 0 z" fill="#d93025"/>
+  <rect x="452" y="210" width="196" height="58" rx="8" fill="#fce8e6" stroke="#d93025" stroke-width="1.5"/>
+  <text x="550" y="234" font-size="15" fill="#c5221f" text-anchor="middle" font-weight="bold">安装前先勾这一项</text>
+  <text x="550" y="256" font-size="13" fill="#c5221f" text-anchor="middle">否则终端会提示找不到 python</text>
+</svg>
