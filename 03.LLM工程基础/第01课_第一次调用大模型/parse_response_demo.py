@@ -9,7 +9,7 @@ import json
 mock_response = """
 {
   "id": "resp_demo_001",
-  "model": "gpt-4o-mini",
+  "model": "deepseek-flash",
   "output_text": "程序就是把你想让电脑做的事，写成它能照着执行的步骤清单。",
   "usage": {
     "input_tokens": 18,
