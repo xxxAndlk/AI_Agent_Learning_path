@@ -1,6 +1,6 @@
 # 用途：第01课《LangChain是什么》最小示例——提示模板接模型，用 .invoke 跑通第一条链。
-# pip install langchain langchain-openai python-dotenv
-# 注意：调模型需要 OPENAI_API_KEY（从环境变量或 .env 读取）；联网调用部分需 Key，未实跑，不伪造输出。
+# pip install langchain langchain-openai python-dotenv（langchain-openai 借 OpenAI 兼容协议接 DeepSeek）
+# 注意：调模型需要 DEEPSEEK_API_KEY（从环境变量或 .env 读取）；联网调用部分需 Key，未实跑，不伪造输出。
 
 import os
 import sys
@@ -12,18 +12,22 @@ try:
 except ImportError:
     pass  # 没装 python-dotenv 就直接用系统环境变量，不影响运行
 
-try:
-    from langchain_core.prompts import ChatPromptTemplate
-    from langchain_openai import ChatOpenAI
-except ImportError:
-    print("依赖还没装好，请先执行：pip install langchain langchain-openai python-dotenv")
-    sys.exit(1)
-
 
 def main() -> None:
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("没找到 OPENAI_API_KEY。")
-        print("请先设置环境变量，或在本文件同目录建一个 .env 文件，写入一行：OPENAI_API_KEY=你的key")
+    # 先查 Key 再碰依赖：没配 Key 时不用装 langchain 也能得到清晰的中文指引
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("没找到 DEEPSEEK_API_KEY，本演示需联网调用 DeepSeek，已跳过。")
+        print("配置方法（三选一）：")
+        print('  1) PowerShell 执行 $env:DEEPSEEK_API_KEY="sk-..."（当前窗口生效）')
+        print("  2) macOS/Linux 在 ~/.zshrc 或 ~/.bashrc 里加 export DEEPSEEK_API_KEY=你的key")
+        print("  3) 在本文件同目录建 .env 文件，写入一行：DEEPSEEK_API_KEY=你的key（勿提交 git）")
+        return
+
+    try:
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_openai import ChatOpenAI
+    except ImportError:
+        print("依赖还没装好，请先执行：pip install langchain langchain-openai python-dotenv")
         sys.exit(1)
 
     # 模板管"话怎么说"，模型管"话谁来说"，竖线把它们串成一条链
@@ -33,7 +37,11 @@ def main() -> None:
             ("human", "用一句话解释什么是{thing}。"),
         ]
     )
-    model = ChatOpenAI(model="gpt-5.4")  # 示例名，可能已更新；跑之前按官网模型列表挑当前便宜够用的
+    model = ChatOpenAI(
+        model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),  # 示例名可能更新，以 DeepSeek 官网模型列表为准
+        api_key=os.environ.get("DEEPSEEK_API_KEY"),
+        base_url="https://api.deepseek.com",  # langchain-openai 借 OpenAI 兼容协议接 DeepSeek
+    )
 
     chain = prompt | model
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """llm_data_demo.py —— 模拟 LLM 数据工程流水线：
 纯标准库离线段（批量模板生成 + 规则质检）本机真跑；
-真实 LLM 批量生成段需 API Key（pip install openai），未填则中文提示跳过，本课未实跑。"""
+真实 LLM 批量生成段需 DEEPSEEK_API_KEY（pip install openai），未填则中文提示跳过，本课未实跑。"""
 
 import json
 import os
@@ -78,12 +78,16 @@ def run_with_llm(passed):
     except ImportError:
         print("\n[跳过] 未安装 openai（pip install openai），真实 LLM 段略过；离线段已完整演示流水线。")
         return
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("\n[跳过] 未设置环境变量 OPENAI_API_KEY，真实 LLM 段略过；本课此段未实跑。")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("\n[跳过] 未设置环境变量 DEEPSEEK_API_KEY，真实 LLM 段略过；本课此段未实跑。")
         return
     try:
-        client = OpenAI()  # Key 从环境变量读，不硬编码
-        model = "gpt-4o-mini"  # 示例名，按官网当前模型列表替换
+        client = OpenAI(
+            api_key=os.environ.get("DEEPSEEK_API_KEY"),
+            base_url="https://api.deepseek.com",
+        )
+        # 默认 deepseek-flash，可用 DEEPSEEK_MODEL 覆盖；示例名可能更新，以 DeepSeek 官网模型列表为准
+        model = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
         extra = client.responses.create(
             model=model,
             input="照这个例子再扩写3条格式相同的客服指令数据：" + json.dumps(passed[0], ensure_ascii=False),

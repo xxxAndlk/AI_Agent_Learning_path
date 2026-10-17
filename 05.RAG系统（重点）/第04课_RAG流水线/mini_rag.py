@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""mini_rag.py —— 最小 RAG 流水线：离线"切块→入库→检索→拼提示"纯标准库真跑，最后一步调模型生成需 API Key。
+"""mini_rag.py —— 最小 RAG 流水线：离线"切块→入库→检索→拼提示"纯标准库真跑，最后一步调 DeepSeek 生成需 Key。
 
 运行离线部分（零依赖）：python mini_rag.py
-生成部分为可选项：需联网与 Key，未配置时中文提示并优雅跳过，不会报错也不会伪造输出
-    pip install openai python-dotenv
+生成部分为可选项：需联网与 DEEPSEEK_API_KEY，未配置时中文提示并优雅跳过，不会报错也不会伪造输出
+    pip install openai python-dotenv   # 生成段用 openai SDK 兼容方式调 DeepSeek
 """
 import math
 import os
@@ -21,7 +21,8 @@ DOCS = [
 def split_chunks(text):
     return [s for s in re.split(r"(?<=[。！？])", text) if s.strip()]
 
-# ---------- 3. 手工嵌入：词袋向量。真实系统换成嵌入模型，但两处必须用同一套 ----------
+# ---------- 3. 手工嵌入：词袋向量。DeepSeek 无 embedding 接口，教学用本地词袋；
+#             生产可换 BGE/通义/智谱等嵌入模型，但文档与问题两处必须用同一套 ----------
 KEYWORDS = ["报销", "发票", "请假", "审批", "密码", "团建"]
 
 def embed(text):
@@ -76,10 +77,12 @@ print("[3] 拼好的最终提示：")
 print(prompt)
 print("=" * 62)
 
-# ---------- 7. 生成：需 API Key 与 openai 库，缺任一项优雅跳过 ----------
-api_key = os.environ.get("OPENAI_API_KEY")
+# ---------- 7. 生成：调 DeepSeek（需 DEEPSEEK_API_KEY 与 openai 库，缺任一项优雅跳过） ----------
+api_key = os.environ.get("DEEPSEEK_API_KEY")
 if not api_key:
-    print("[4] 生成阶段跳过：未设置环境变量 OPENAI_API_KEY。")
+    print("[4] 生成阶段跳过：未设置环境变量 DEEPSEEK_API_KEY。")
+    print("    配置方法三选一：PowerShell 执行 $env:DEEPSEEK_API_KEY=\"sk-...\"；")
+    print("    或 bash 执行 export DEEPSEEK_API_KEY=sk-...；或写入 .env 文件（勿提交 git）。")
     print("    配置 Key 并 pip install openai python-dotenv 后，模型会基于上面的提示生成带出处的回答。")
 else:
     try:
@@ -88,9 +91,10 @@ else:
         print("[4] 生成阶段跳过：已检测到 Key，但未安装 openai 库（pip install openai python-dotenv）。")
     else:
         try:
-            client = OpenAI(api_key=api_key)
-            # 模型名以官网模型列表为准，这里选当前便宜够用的做示例，可能已有更新
-            resp = client.responses.create(model="gpt-5-mini", input=prompt)
+            client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+            # 默认 deepseek-flash，可用环境变量 DEEPSEEK_MODEL 覆盖；示例名可能更新，以 DeepSeek 官网模型列表为准
+            model = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
+            resp = client.responses.create(model=model, input=prompt)
             print("[4] 模型回答：")
             print(resp.output_text)
         except Exception as exc:

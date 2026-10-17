@@ -6,7 +6,7 @@
     python check_env.py
 
 作用：检查 Python 版本、各章要用的第三方库、API Key 是否就绪，并给出中文建议。
-支持 OpenAI 及国产模型（DeepSeek / 智谱 GLM / 通义千问 / Kimi）的 Key 识别。
+默认首推 DeepSeek（DEEPSEEK_API_KEY），同时保留 OpenAI / 智谱 GLM / 通义千问 / Kimi 等多厂商 Key 识别。
 脚本正常退出（返回 0），缺少可选库不算错误，按提示按需安装即可。
 """
 
@@ -17,8 +17,8 @@ import importlib.util
 
 # 支持的 Key 环境变量名 → 对应厂商
 KEY_NAMES = [
+    ("DEEPSEEK_API_KEY", "DeepSeek"),   # 默认首推
     ("OPENAI_API_KEY", "OpenAI"),
-    ("DEEPSEEK_API_KEY", "DeepSeek"),
     ("ZHIPU_API_KEY", "智谱 GLM"),
     ("DASHSCOPE_API_KEY", "通义千问"),
     ("MOONSHOT_API_KEY", "Kimi"),
@@ -74,13 +74,15 @@ def detect_key():
     for var, provider in KEY_NAMES:  # 先查环境变量
         val = os.environ.get(var)
         if val:
-            p = guess_provider(os.environ.get("OPENAI_BASE_URL")) or provider
+            p = guess_provider(os.environ.get("DEEPSEEK_BASE_URL")
+                               or os.environ.get("OPENAI_BASE_URL")) or provider
             return val, var, p
 
     for var, provider in KEY_NAMES:  # 再查 .env
         val = file_env.get(var)
         if val:
-            p = guess_provider(file_env.get("OPENAI_BASE_URL")) or provider
+            p = guess_provider(file_env.get("DEEPSEEK_BASE_URL")
+                               or file_env.get("OPENAI_BASE_URL")) or provider
             return val, var, p
 
     return None, None, None
@@ -130,8 +132,12 @@ def main():
         print("         出于安全，不显示 Key 的具体内容。")
     else:
         print("    [  ] 还没配置。第 1 章不需要；")
-        print("         想不花钱先试一次：看《新手使用指南.md》")
-        print("         第四节「零成本第一次调用」（DeepSeek 注册送额度）。")
+        print("         首推 DeepSeek（注册送免费额度）：<https://platform.deepseek.com>")
+        print("         配置三法（任选其一）：")
+        print("           Windows (PowerShell):  $env:DEEPSEEK_API_KEY=\"sk-xxx\"")
+        print("           macOS/Linux:           export DEEPSEEK_API_KEY=sk-xxx")
+        print("           或写入项目根目录 .env： DEEPSEEK_API_KEY=sk-xxx")
+        print("         详细步骤见《新手使用指南.md》第四节「零成本第一次调用」。")
 
     openai_ready = importlib.util.find_spec("openai") is not None
     print("\n" + "=" * 52)
@@ -144,7 +150,7 @@ def main():
         print("    就能开始第 3 章。")
     else:
         print("  · 学到第 3 章前：执行 pip install openai python-dotenv，")
-        print("    再按指南第四节配置 Key（可用免费额度）即可。")
+        print("    再按指南第四节注册 DeepSeek 并配置 DEEPSEEK_API_KEY 即可。")
     print("=" * 52)
 
 

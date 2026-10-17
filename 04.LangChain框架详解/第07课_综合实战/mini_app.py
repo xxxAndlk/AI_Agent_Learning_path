@@ -4,7 +4,7 @@
 #       第②段装了 langchain 即可离线跑（InMemoryVectorStore + 提示模板 + @tool）；
 #       第③段模型调用需 API Key：需 API Key，未实跑，配置后可自行运行，不伪造输出。
 # pip install langchain langchain-openai langchain-core python-dotenv
-# 运行前配置环境变量 OPENAI_API_KEY（或在本文件同目录建 .env 写 OPENAI_API_KEY=sk-...，
+# 运行前配置环境变量 DEEPSEEK_API_KEY（或在本文件同目录建 .env 写 DEEPSEEK_API_KEY=sk-...，
 # .env 不要提交到代码仓库）。
 
 import ast
@@ -140,7 +140,8 @@ def build_retriever():
 
     class HandEmbeddings(Embeddings):
         """接口对上（embed_documents / embed_query），土向量仪就能在框架里冒充真货；
-        以后换 OpenAIEmbeddings 只改这一处，插头一样，电器随便换。"""
+        生产换真实嵌入模型只改这一处（DeepSeek 无 embedding 接口，可选 BGE/通义千问/智谱等），
+        插头一样，电器随便换。"""
 
         def embed_documents(self, texts):
             return [hand_embed(t) for t in texts]
@@ -194,8 +195,9 @@ def langchain_demo() -> None:
 # ============================================================ 第③段：模型调用（需 API Key，未实跑）
 def online_demo() -> None:
     print("== 第③段：通电——模型调用（需 API Key，未实跑）==")
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("（没检测到 OPENAI_API_KEY，跳过。配置后重新运行即可看到真实输出；")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("（没检测到 DEEPSEEK_API_KEY，跳过。配置后重新运行即可看到真实输出；")
+        print('  配置：PowerShell 执行 $env:DEEPSEEK_API_KEY="sk-..."，或 export / 写 .env；')
         print("  该段会产生少量费用，本课写作时未实跑，不伪造输出。）\n")
         return
     try:
@@ -212,7 +214,11 @@ def online_demo() -> None:
         print("（安装：pip install langchain langchain-openai）\n")
         return
 
-    model = ChatOpenAI(model="gpt-4o-mini")  # 示例名，实际按官网模型列表选当前便宜够用的
+    model = ChatOpenAI(
+        model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),  # 示例名可能更新，以 DeepSeek 官网模型列表为准
+        api_key=os.environ.get("DEEPSEEK_API_KEY"),
+        base_url="https://api.deepseek.com",  # langchain-openai 借 OpenAI 兼容协议接 DeepSeek
+    )
 
     def format_docs(docs):
         return "\n".join(f"- {d.page_content}" for d in docs)

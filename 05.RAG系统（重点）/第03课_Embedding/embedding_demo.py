@@ -1,10 +1,9 @@
 # embedding_demo.py —— 第03课配套演示：手工小向量算余弦相似度，体会"语义坐标"检索
 # 主体离线实跑：纯标准库，无需安装任何包，直接 python embedding_demo.py
-# 结尾的真实嵌入 API 演示：# pip install openai，且需环境变量 OPENAI_API_KEY（需 API Key，本机未实跑）
+# 结尾的"真实嵌入 API"段：DeepSeek 不提供 embedding 接口，本课一律用本地手工向量演示；
+# 生产可选 BGE / 通义千问 / 智谱等嵌入服务（调用形状见 demo_real_api 内注释，需各自 API Key，未实跑）
 
-import importlib.util
 import math
-import os
 import sys
 
 # Windows 控制台默认 GBK，中文容易乱码：强制按 UTF-8 输出
@@ -79,28 +78,22 @@ def demo_normalization():
 
 
 def demo_real_api():
-    """调用真实嵌入 API 的样子。需 API Key 与 openai 库，本机未实跑；不伪造任何输出。"""
-    if importlib.util.find_spec("openai") is None:
-        print()
-        print("[跳过] 未安装 openai 库（pip install openai），真实嵌入 API 演示不运行（需 API Key，未实跑）。")
-        return
-    if not os.environ.get("OPENAI_API_KEY"):
-        print()
-        print("[跳过] 未设置 OPENAI_API_KEY，真实嵌入 API 演示不运行（需 API Key，未实跑）。")
-        return
-    try:
-        from openai import OpenAI  # pip install openai
-        client = OpenAI()  # key 从环境变量 OPENAI_API_KEY 读取，不写进代码
-        resp = client.embeddings.create(
-            model="text-embedding-3-small",  # 示例名，可能已更新：按官网模型列表选当前够用的
-            input=["小猫在沙发上睡觉", "今晚吃火锅还是烤肉"],
-        )
-        vec = resp.data[0].embedding
-        head = ", ".join(f"{x:.4f}" for x in vec[:5])
-        print(f"\n[真实API] 成功：{len(vec)} 维向量，前 5 维 = [{head}, ...]")
-    except Exception as e:
-        print(f"\n[真实API] 调用失败：{e}")
-        print("排查提示：key 是否有效、网络是否可达、账户是否有额度；模型名以官网列表为准。")
+    """讲解真实嵌入 API 的接法。DeepSeek 不提供 embedding 接口，本函数只讲解不联网，
+    不伪造任何嵌入调用；主体演示全部由上面的本地手工向量完成（离线可跑）。"""
+    print()
+    print("=" * 50)
+    print("第四部分：真实嵌入 API 怎么接（讲解段，不联网）")
+    print("=" * 50)
+    print("  说明：DeepSeek 不提供 embedding 接口，所以本课检索用本地手工向量演示。")
+    print("  生产中需要语义检索时，可换用带嵌入服务的方案，例如：")
+    print("    - BGE 系列：开源可本地部署（如 BGE-M3，多语言、对中文友好）")
+    print("    - 通义千问 / 智谱：商业嵌入 API，按量付费")
+    print("  调用形状大致如下（各家 SDK 略异，以官网文档为准；需各自 API Key，未实跑）：")
+    # ---- 真实嵌入 API 的调用形状（教学参考注释，本课不执行，严禁伪造输出）----
+    # from openai import OpenAI   # 兼容 openai SDK 的嵌入服务商（DeepSeek 无 embedding，不能用它做嵌入）
+    # client = OpenAI(api_key="你的嵌入服务商Key", base_url="该服务商的 base_url")
+    # resp = client.embeddings.create(model="该服务商的嵌入模型名", input=["小猫在沙发上睡觉"])
+    # vec = resp.data[0].embedding  # 得到向量后，余弦相似度用法与本课手工向量完全相同
 
 
 if __name__ == "__main__":

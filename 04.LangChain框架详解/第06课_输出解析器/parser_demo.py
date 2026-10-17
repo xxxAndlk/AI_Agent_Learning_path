@@ -3,7 +3,7 @@
 #       再列 PydanticOutputParser 的真实写法（装了 langchain 就能离线跑）。
 # 安装：pip install langchain langchain-core pydantic python-dotenv
 # 说明：情形1~4 与格式说明演示都不需要 API Key，可真跑；
-#       联网链路（prompt | model | parser）需要 OPENAI_API_KEY，会产生少量费用，未实跑。
+#       联网链路（prompt | model | parser）需要 DEEPSEEK_API_KEY，会产生少量费用，未实跑。
 
 import json
 import os
@@ -157,7 +157,7 @@ def pydantic_demo() -> None:
 
 
 def online_demo() -> None:
-    """完整链 prompt | model | parser。需要 OPENAI_API_KEY，会产生少量费用。未实跑。"""
+    """完整链 prompt | model | parser。需要 DEEPSEEK_API_KEY，会产生少量费用。未实跑。"""
     from langchain_core.prompts import ChatPromptTemplate
     from langchain_openai import ChatOpenAI
     from pydantic import BaseModel, Field
@@ -170,7 +170,11 @@ def online_demo() -> None:
         pros: list[str] = Field(description="优点，2 到 3 条")
 
     parser = PydanticOutputParser(pydantic_object=MovieReview)
-    model = ChatOpenAI(model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))  # 示例名可能已更新
+    model = ChatOpenAI(
+        model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),  # 示例名可能更新，以 DeepSeek 官网模型列表为准
+        api_key=os.environ.get("DEEPSEEK_API_KEY"),
+        base_url="https://api.deepseek.com",  # langchain-openai 借 OpenAI 兼容协议接 DeepSeek
+    )
 
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -192,10 +196,11 @@ def main() -> None:
     offline_main()
     pydantic_demo()
 
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("\n提示：没设置 OPENAI_API_KEY，联网链路演示已跳过（该段未实跑）。")
-        print("Windows：setx OPENAI_API_KEY 你的key（重开终端生效）")
-        print("macOS/Linux：在 ~/.zshrc 或 ~/.bashrc 里加 export OPENAI_API_KEY=你的key")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("\n提示：没设置 DEEPSEEK_API_KEY，联网链路演示已跳过（该段未实跑）。")
+        print('Windows：PowerShell 执行 $env:DEEPSEEK_API_KEY="sk-..."（或 setx 后重开终端）')
+        print("macOS/Linux：在 ~/.zshrc 或 ~/.bashrc 里加 export DEEPSEEK_API_KEY=你的key")
+        print("也可以在本目录建 .env 文件写入 DEEPSEEK_API_KEY=你的key（勿提交 git）")
         return
 
     print("\n== 联网链路（需要 API Key）==")

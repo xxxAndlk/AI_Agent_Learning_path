@@ -1,6 +1,6 @@
 # 第03课示例代码：Function Calling 完整闭环（模型只决定"调哪个工具、参数是什么"，真正执行函数的是本脚本）
-# pip install openai python-dotenv
-# 说明：在线部分需 OPENAI_API_KEY 环境变量，未实跑；__main__ 里的"离线演示"不依赖 Key、可直接运行，先体验调度执行。
+# pip install -U openai python-dotenv
+# 说明：在线部分需 DEEPSEEK_API_KEY 环境变量，未实跑；__main__ 里的"离线演示"不依赖 Key、可直接运行，先体验调度执行。
 
 import ast
 import json
@@ -11,12 +11,12 @@ import os
 try:
     from dotenv import load_dotenv
 
-    load_dotenv()  # 支持把 OPENAI_API_KEY 放进同目录 .env（.env 别提交到 git）
+    load_dotenv()  # 支持把 DEEPSEEK_API_KEY 放进同目录 .env（.env 别提交到 git）
 except ImportError:
     pass
 
-# 模型名更新很快，这里只是"便宜够用"的示例；学习时请去你的平台模型列表挑当前便宜的那款
-MODEL = "gpt-4o-mini"
+# 示例名可能更新，以 DeepSeek 官网模型列表为准；需强推理可换 deepseek-v4-pro
+MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
 
 
 # ---------- 第一部分：本地工具（纯标准库，离线可跑） ----------
@@ -79,33 +79,35 @@ def calculate(expression: str) -> str:
     return json.dumps({"expression": expression, "result": result}, ensure_ascii=False)
 
 
-# ---------- 第二部分：给模型的"菜单"（Responses API 的工具描述） ----------
+# ---------- 第二部分：给模型的"菜单"（chat.completions 的 tools 描述） ----------
 
 TOOLS = [
     {
         "type": "function",
-        "name": "get_weather",
-        "description": "查询某城市当日模拟天气。仅当用户问到北京/上海/广州的天气时调用，其他话题不要调用。",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "city": {"type": "string", "description": "中文城市名，例如：北京"},
+        "function": {
+            "name": "get_weather",
+            "description": "查询某城市当日模拟天气。仅当用户问到北京/上海/广州的天气时调用，其他话题不要调用。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "city": {"type": "string", "description": "中文城市名，例如：北京"},
+                },
+                "required": ["city"],
             },
-            "required": ["city"],
-            "additionalProperties": False,
         },
     },
     {
         "type": "function",
-        "name": "calculate",
-        "description": "计算算术表达式的结果，支持 + - * / 和括号。需要精确计算时使用，不要自己心算。",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "expression": {"type": "string", "description": "算术表达式字符串，例如：(128*365+79)/12"},
+        "function": {
+            "name": "calculate",
+            "description": "计算算术表达式的结果，支持 + - * / 和括号。需要精确计算时使用，不要自己心算。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "expression": {"type": "string", "description": "算术表达式字符串，例如：(128*365+79)/12"},
+                },
+                "required": ["expression"],
             },
-            "required": ["expression"],
-            "additionalProperties": False,
         },
     },
 ]
@@ -143,25 +145,27 @@ MAX_ROUNDS = 5  # 轮数上限：防止模型反复要工具的异常情况把�
 
 
 def ask_model(question: str) -> str:
+    """DeepSeek 官方 Tool Calls 范式：模型只"递单"不执行，真正干活的是本脚本，
+    执行结果以 role=tool 回传，循环不超过 MAX_ROUNDS 轮。"""
     try:
         from openai import OpenAI
     except ImportError:
-        print("还没安装 openai 库，请先执行：pip install openai")
+        print("还没安装 openai 库，请先执行：pip install -U openai")
         return ""
 
-    api_key = os.environ.get("OPENAI_API_KEY")  # Key 一律从环境变量读，绝不写进代码
+    api_key = os.environ.get("DEEPSEEK_API_KEY")  # Key 一律从环境变量读，绝不写进代码
     if not api_key:
-        print("没找到环境变量 OPENAI_API_KEY，请先设置（见第01课），或用 python-dotenv 从 .env 读取。")
+        print("没找到环境变量 DEEPSEEK_API_KEY，请先设置（见第01课），或用 python-dotenv 从 .env 读取。")
         return ""
 
-    client = OpenAI(api_key=api_key)
+    client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     conversation = [{"role": "user", "content": question}]
 
     for round_no in range(1, MAX_ROUNDS + 1):
         try:
-            response = client.responses.create(
+            response = client.chat.completions.create(
                 model=MODEL,
-                input=conversation,
+                messages=conversation,
                 tools=TOOLS,  # 每一轮都带上菜单，模型才能继续点下一道菜
                 tool_choice="auto",
             )
@@ -170,21 +174,21 @@ def ask_model(question: str) -> str:
             print("常见原因：Key 不对、额度用完、网络不通，检查后重试。")
             return ""
 
-        calls = [item for item in response.output if item.type == "function_call"]
+        message = response.choices[0].message
+        calls = message.tool_calls
         if not calls:
-            # 模型觉得不需要工具了，output_text 就是最终的自然语言回答
-            return response.output_text
+            # 模型觉得不需要工具了，content 就是最终的自然语言回答
+            return message.content
 
         # 关键细节：先把模型的输出（含调用请求）放进历史，再逐个补上执行结果
-        conversation += response.output
+        conversation.append(message)
         print(f"[第 {round_no} 轮] 模型请求 {len(calls)} 个工具调用")
         for call in calls:
-            print(f"    单子：{call.name}({call.arguments})")
-            result = run_tool(call.name, call.arguments)
+            print(f"    单子：{call.function.name}({call.function.arguments})")
+            result = run_tool(call.function.name, call.function.arguments)
             print(f"    结果：{result}")
-            conversation.append(
-                {"type": "function_call_output", "call_id": call.call_id, "output": result}
-            )
+            # 工具结果以 role=tool 回传，tool_call_id 与模型递的单子一一对应
+            conversation.append({"role": "tool", "tool_call_id": call.id, "content": result})
 
     return "工具调用轮数达到上限，提前结束。可以换个问法，或检查工具描述是否写得太模糊。"
 
@@ -205,12 +209,12 @@ if __name__ == "__main__":
         print(f"  -> {run_tool(name, args)}")
 
     print("\n" + "=" * 56)
-    if os.environ.get("OPENAI_API_KEY"):
+    if os.environ.get("DEEPSEEK_API_KEY"):
         question = "帮我查一下北京今天天气，再算算 (128*365+79)/12 等于多少。"
         print(f"正在问模型：{question}\n")
         answer = ask_model(question)
         if answer:
             print(f"\n模型的最终回答：{answer}")
     else:
-        print("在线闭环需要 API Key：设置 OPENAI_API_KEY 环境变量后重新运行本脚本。")
+        print("在线闭环需要 API Key：设置 DEEPSEEK_API_KEY 环境变量后重新运行本脚本。")
         print("说明：本文件的 API 部分需 Key、未实跑；上面的离线演示已本地验证。")

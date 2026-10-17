@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # 用途：LCEL 管道演示——顺序链、并行链、重试与兜底，外加一条不联网的纯 Runnable 小链。
 # 安装：pip install langchain langchain-openai python-dotenv
-# 说明：联网调用大模型需要 API Key，本文件未实跑、仅演示写法；
+# 说明：联网调用 DeepSeek 需要 DEEPSEEK_API_KEY，本文件在线段未实跑、仅演示写法；
 #       没填 Key 时也能先跑离线小链，感受管道的用法。
 
 import os
@@ -20,10 +20,14 @@ from langchain_core.runnables import RunnableLambda, RunnableParallel, RunnableP
 
 
 def build_model():
-    """模型名从环境变量读，没设就用示例名（可能已更新，按官网模型列表选便宜够用的）。"""
+    """接 DeepSeek：模型名可用 DEEPSEEK_MODEL 覆盖，默认 deepseek-flash。"""
     from langchain_openai import ChatOpenAI
 
-    return ChatOpenAI(model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"))
+    return ChatOpenAI(
+        model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),  # 示例名可能更新，以 DeepSeek 官网模型列表为准
+        api_key=os.environ.get("DEEPSEEK_API_KEY"),
+        base_url="https://api.deepseek.com",  # langchain-openai 借 OpenAI 兼容协议接 DeepSeek
+    )
 
 
 def offline_demo():
@@ -41,7 +45,7 @@ def offline_demo():
 
 
 def online_demo():
-    """联网部分：需要 OPENAI_API_KEY，会产生少量费用。"""
+    """联网部分：需要 DEEPSEEK_API_KEY，会产生少量费用。"""
     model = build_model()
 
     # ① 顺序链：提示 | 模型 | 字符串输出，最经典的一条。
@@ -83,10 +87,11 @@ def main():
         print("多半是还没装依赖，先执行：pip install langchain")
         return
 
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("\n提示：没设置 OPENAI_API_KEY，联网演示已跳过。")
-        print("Windows：setx OPENAI_API_KEY 你的key（重开终端生效）")
-        print("macOS/Linux：在 ~/.zshrc 或 ~/.bashrc 里加 export OPENAI_API_KEY=你的key")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("\n提示：没设置 DEEPSEEK_API_KEY，联网演示已跳过。")
+        print('Windows：PowerShell 执行 $env:DEEPSEEK_API_KEY="sk-..."（或 setx 后重开终端）')
+        print("macOS/Linux：在 ~/.zshrc 或 ~/.bashrc 里加 export DEEPSEEK_API_KEY=你的key")
+        print("也可以在本目录建 .env 文件写入 DEEPSEEK_API_KEY=你的key（勿提交 git）")
         return
 
     print("\n== 联网链路（需要 API Key）==")

@@ -5,8 +5,10 @@
     python local_kb_rag.py                 # 内置演示：入库/检索/回答
     python local_kb_rag.py ask "年假有几天"  # 单独提问
 
-可选升级（需 API Key，未实跑）：pip install openai，并设置环境变量 OPENAI_API_KEY，
-程序会自动用真实模型把资料组织成回答；未配置时退回抽取式兜底。
+可选升级（需 DEEPSEEK_API_KEY，未实跑）：pip install openai python-dotenv，生成段用
+openai SDK 兼容方式调 DeepSeek（base_url=https://api.deepseek.com），把资料组织成回答；
+未配置时退回抽取式兜底。检索用本地 bigrams 字词重合度：DeepSeek 无 embedding 接口，
+生产可换 BGE/通义/智谱等嵌入模型 + 向量库。
 """
 
 import json
@@ -75,6 +77,8 @@ def load_kb():
 
 
 # ---------------------------------------------------------------- 检索
+# DeepSeek 不提供 embedding 接口，本课检索用本地 bigrams 字词重合度（零依赖可跑）；
+# 生产可换 BGE / 通义千问 / 智谱等嵌入模型把文本变向量，再用 FAISS/Chroma 等向量库检索。
 def bigrams(s):
     """中文没空格可分词，取相邻两字组合当"词"。标点不参与打分。"""
     s = re.sub(r"[，。？！、：；()\s]", "", s)
@@ -95,19 +99,21 @@ def search(kb, question, top=2):
 
 # ---------------------------------------------------------------- 回答
 def ask_real_llm(question, hits):
-    """可选：用真实模型把资料揉成一句通顺回答。缺 Key/缺库/失败都退回 None。"""
-    if not os.environ.get("OPENAI_API_KEY"):
+    """可选：调 DeepSeek 把资料揉成一句通顺回答。缺 Key/缺库/失败都退回 None。"""
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
         return None
     try:
-        from openai import OpenAI  # pip install openai
+        from openai import OpenAI  # pip install openai python-dotenv
     except ImportError:
-        print("（提示：未安装 openai 库，pip install openai 后可用真实模型回答）")
+        print("（提示：未安装 openai 库，pip install openai 后可用 DeepSeek 回答）")
         return None
     context = "\n".join(f"[{c['doc']} 第{c['idx']}段] {c['text']}" for _, c in hits)
     try:
-        client = OpenAI()
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        # 默认 deepseek-flash，可用 DEEPSEEK_MODEL 覆盖；示例名可能更新，以 DeepSeek 官网模型列表为准
         resp = client.responses.create(
-            model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),  # 示例名，按官网当前列表替换
+            model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),
             input=(
                 "仅根据以下资料回答问题，一句话作答并在末尾注明出处。\n"
                 f"资料：\n{context}\n\n问题：{question}"

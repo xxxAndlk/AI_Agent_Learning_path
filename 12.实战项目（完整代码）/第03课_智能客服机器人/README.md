@@ -27,5 +27,5 @@ python customer_service.py demo   # 自动轮播三类典型对话
 ## 接下来可以改
 
 - 把 `KB` 换成第 01 课的 `local_kb_rag.search()`，检索能力立刻升级
-- 配置 `OPENAI_API_KEY` 后，模型会把制度润色得更有温度（模板仍是骨架）
+- 配置 `DEEPSEEK_API_KEY` 后，模型（DeepSeek，默认 deepseek-flash）会把制度润色得更有温度（模板仍是骨架）
 - 学完第 14 章回来：加 Streamlit 聊天窗口界面

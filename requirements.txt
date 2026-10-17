@@ -7,13 +7,17 @@
 # 3. 下面只给“最低版本”，不锁死版本，pip 会自动取兼容的新版。
 # 4. Windows 若安装慢，可先执行：
 #    pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+# 5. 调用 DeepSeek 需配置环境变量 DEEPSEEK_API_KEY（注册：https://platform.deepseek.com，
+#    详细步骤见《新手使用指南.md》第四节）
+# 6. 若报 TypeError: Client.__init__() got an unexpected keyword argument 'proxies'，
+#    是 openai<1.55.3 搭配新版 httpx 所致，执行：pip install -U openai httpx
 #
 # 只想快速开始第 3 章？装这两个就够：
 #    pip install openai python-dotenv
 # =========================================================
 
-# --- 调用大模型（第 3 章起，核心）---
-openai>=1.40
+# --- 调用大模型（第 3 章起，核心；默认 DeepSeek，走 OpenAI 兼容协议）---
+openai>=1.55.3
 python-dotenv>=1.0
 
 # --- LangChain 框架（第 4 章）---

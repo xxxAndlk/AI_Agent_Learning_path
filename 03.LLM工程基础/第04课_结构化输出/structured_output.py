@@ -1,8 +1,8 @@
 # structured_output.py —— 第04课演示：让模型按 JSON Schema 交"报销单"（结构化输出）
-# pip install openai pydantic python-dotenv
+# pip install -U openai pydantic python-dotenv
 # 运行：python structured_output.py
 #   - parse_demo 离线部分：纯标准库即可跑（本机已实跑通过）
-#   - API 演示部分：需环境变量 OPENAI_API_KEY（需 Key，未实跑）
+#   - API 演示部分：需环境变量 DEEPSEEK_API_KEY（需 Key，未实跑）
 
 import json
 import os
@@ -45,6 +45,8 @@ COMMENT_SCHEMA = {
 }
 # 上面这份 Schema 不必手写：装好 pydantic 后执行 CommentAnalysis.model_json_schema()
 # 就能生成等价物（strict 模式要求可选字段也出现在 required 里，允许值为 null）。
+# json_schema 严格模式各平台支持不一，本课在线段改用更通用的 json_object 模式，
+# 靠 prompt 里的 JSON 示例 + Pydantic 校验兜住格式（见 call_model / robust_parse）。
 
 
 # ---------- 2. 稳健解析：剥围栏 -> json.loads -> Pydantic 校验 ----------
@@ -120,42 +122,50 @@ def parse_demo():
         print("\n提示：pip install pydantic 后重跑，案例3会被字段校验当场打回。")
 
 
-# ---------- 4. API 演示：Responses API + JSON Schema，需 Key 未实跑 ----------
+# ---------- 4. API 演示：chat.completions + json_object，需 Key 未实跑 ----------
 
-MODEL_NAME = "gpt-4o-mini"  # 示例名，随时可能更新：按平台模型列表选个便宜够用的
-PROMPT_TEMPLATE = "分析下面这条电商评论的情感、星级与关键词。评论：\n{comment}"
+# 示例名可能更新，以 DeepSeek 官网模型列表为准；需强推理可换 deepseek-v4-pro
+MODEL_NAME = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
+PROMPT_TEMPLATE = (
+    "分析下面这条电商评论的情感、星级与关键词，只返回 JSON，不要任何解释。"
+    "字段约定：sentiment 取 positive/neutral/negative 之一，rating 为 1~5 的整数，"
+    "keywords 为最多 5 个关键词的数组，note 为字符串或 null。"
+    'JSON 示例：{"sentiment": "negative", "rating": 2, "keywords": ["发热"], "note": "疑似质量问题"}\n'
+    "评论：\n{comment}"
+)
+
+
+def build_prompt(comment: str) -> str:
+    """拼提示词。json_object 模式要求 prompt 里出现 "json" 字样并给 JSON 示例。"""
+    return PROMPT_TEMPLATE.replace("{comment}", comment)
 
 
 def build_client():
-    """Key 只从环境变量读，绝不写进代码；SDK 默认读的就是 OPENAI_API_KEY。"""
+    """Key 只从环境变量读，绝不写进代码；base_url 指向 DeepSeek 的服务器。"""
     try:
         from openai import OpenAI
     except ImportError:
-        raise SystemExit("缺少第三方库：请先执行 pip install openai pydantic python-dotenv")
-    if not os.environ.get("OPENAI_API_KEY"):
-        raise SystemExit("未检测到 OPENAI_API_KEY：请按第01课的方法设置环境变量（或写入 .env）后重试")
-    return OpenAI()
+        raise SystemExit("缺少第三方库：请先执行 pip install -U openai pydantic python-dotenv")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
+        raise SystemExit("未检测到 DEEPSEEK_API_KEY：请按第01课的方法设置环境变量（或写入 .env）后重试")
+    return OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
 
 def call_model(client, prompt: str) -> str:
-    """格式约束交给接口层：text.format 指定 json_schema，模型想跑偏都难。"""
-    response = client.responses.create(
+    """格式约束交给接口层：response_format=json_object 强制模型只吐 JSON。"""
+    response = client.chat.completions.create(
         model=MODEL_NAME,
-        input=prompt,
-        text={"format": {
-            "type": "json_schema",
-            "name": "comment_analysis",
-            "strict": True,
-            "schema": COMMENT_SCHEMA,
-        }},
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
     )
-    return response.output_text
+    return response.choices[0].message.content
 
 
 def analyze_comment(client, comment: str):
     """分析一条评论；解析/校验失败时，带着错误信息重试一次——圈出错题再让模型改。"""
     try:
-        raw = call_model(client, PROMPT_TEMPLATE.format(comment=comment))
+        raw = call_model(client, build_prompt(comment))
         return robust_parse(raw)
     except SystemExit:
         raise
@@ -174,10 +184,10 @@ def main():
     parse_demo()  # 离线部分永远先跑，练手感不花钱
 
     print("\n" + "=" * 52)
-    print("API 演示（需 OPENAI_API_KEY，未设置则跳过）")
+    print("API 演示（需 DEEPSEEK_API_KEY，未设置则跳过）")
     print("=" * 52)
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("未检测到 OPENAI_API_KEY，跳过真实调用。设置好环境变量后重跑即可。")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("未检测到 DEEPSEEK_API_KEY，跳过真实调用。设置好环境变量后重跑即可。")
         return
     if not HAS_PYDANTIC:
         print("未安装 pydantic（缺少最后一道校验），跳过 API 演示。")

@@ -2,9 +2,9 @@
 # 用途：演示"让模型记得前文"——新版 checkpointer + thread_id 连问两轮证明它记得，
 #       并附旧版 BufferMemory 写法对照；末尾带一个不依赖框架、纯标准库可真跑的离线小练。
 # pip install langchain langchain-openai langchain-core python-dotenv
-# 运行前配置环境变量 OPENAI_API_KEY（或在本文件同目录建 .env 写 OPENAI_API_KEY=sk-...，
+# 运行前配置环境变量 DEEPSEEK_API_KEY（或在本文件同目录建 .env 写 DEEPSEEK_API_KEY=sk-...，
 # .env 不要提交到代码仓库）。
-# 注意：在线部分需要 API Key 且产生少量费用，本机未实跑；离线小练无 Key 也能跑。
+# 注意：在线部分需要 DEEPSEEK_API_KEY 且产生少量费用，本机未实跑；离线小练无 Key 也能跑。
 
 import os
 
@@ -26,7 +26,11 @@ def demo_new_checkpointer() -> None:
 
     checkpointer = InMemorySaver()  # 存内存：程序重启就没了；要跨重启换 SQLite 等实现
     agent = create_agent(
-        model=ChatOpenAI(model="gpt-4o-mini"),  # 示例名，实际按官网模型列表选当前便宜够用的
+        model=ChatOpenAI(
+            model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),  # 示例名可能更新，以 DeepSeek 官网模型列表为准
+            api_key=os.environ.get("DEEPSEEK_API_KEY"),
+            base_url="https://api.deepseek.com",  # langchain-openai 借 OpenAI 兼容协议接 DeepSeek
+        ),
         tools=[],
         system_prompt="你是一个友好的中文助手，回答简短。",
         checkpointer=checkpointer,
@@ -57,7 +61,7 @@ def demo_old_memory_note() -> None:
     #
     # memory = ConversationBufferMemory()          # 原文全留：越攒越长、费 token
     # conversation = ConversationChain(
-    #     llm=ChatOpenAI(model="gpt-4o-mini"),
+    #     llm=ChatOpenAI(model="deepseek-flash"),  # 旧范式对照：换 DeepSeek 同样只改模型参数
     #     memory=memory,
     # )
     # conversation.predict(input="我叫小林，最喜欢的数字是 7。")
@@ -107,10 +111,10 @@ def main() -> None:
     print("== Memory 演示：让模型记得前文 ==\n")
     offline_practice()  # 纯标准库，总是能跑
 
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("未检测到环境变量 OPENAI_API_KEY，在线演示跳过。")
-        print("配置方法：set OPENAI_API_KEY=sk-...（Windows）或 export OPENAI_API_KEY=sk-...（Mac/Linux），")
-        print("或在同目录建 .env 文件写入 OPENAI_API_KEY=sk-...。上面的离线小练已完整演示三种策略。")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("未检测到环境变量 DEEPSEEK_API_KEY，在线演示跳过。")
+        print('配置方法：PowerShell 执行 $env:DEEPSEEK_API_KEY="sk-..."，或 export DEEPSEEK_API_KEY=sk-...（Mac/Linux），')
+        print("或在同目录建 .env 文件写入 DEEPSEEK_API_KEY=sk-...。上面的离线小练已完整演示三种策略。")
         return
 
     try:

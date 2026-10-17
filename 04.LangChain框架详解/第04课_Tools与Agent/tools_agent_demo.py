@@ -1,7 +1,7 @@
 # 第04课《Tools 与 Agent》配套演示：@tool 定义工具 + create_agent 组装 Agent
 # pip install langchain langchain-openai python-dotenv
 # 运行说明：文件末尾的"离线演示"只调本地工具，不需要 API Key，可直接跑；
-#           Agent 对话部分需要设置环境变量 OPENAI_API_KEY（本机未实跑）。
+#           Agent 对话部分需要设置环境变量 DEEPSEEK_API_KEY（本机未实跑）。
 # 安全红线：计算器用 ast 白名单解析表达式，绝不用 eval（原因见讲义第 03 课回顾）。
 
 import ast
@@ -92,13 +92,17 @@ def agent_demo():
         print("\n== Agent 演示跳过：请先 pip install langchain langchain-openai ==")
         return
 
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
     if not api_key:
-        print("\n== Agent 演示跳过：未检测到环境变量 OPENAI_API_KEY ==")
-        print("设置方法：PowerShell 执行 $env:OPENAI_API_KEY=\"sk-...\"，或写入 .env 用 python-dotenv 读取")
+        print("\n== Agent 演示跳过：未检测到环境变量 DEEPSEEK_API_KEY ==")
+        print("设置方法：PowerShell 执行 $env:DEEPSEEK_API_KEY=\"sk-...\"，或写入 .env 用 python-dotenv 读取")
         return
 
-    llm = ChatOpenAI(model="gpt-4o-mini", api_key=api_key)  # 示例模型名，可能已更新：按官网模型列表选
+    llm = ChatOpenAI(
+        model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),  # 示例名可能更新，以 DeepSeek 官网模型列表为准
+        api_key=api_key,
+        base_url="https://api.deepseek.com",  # langchain-openai 借 OpenAI 兼容协议接 DeepSeek
+    )
 
     agent = create_agent(
         model=llm,

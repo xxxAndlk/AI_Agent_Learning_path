@@ -1,7 +1,7 @@
 # 第02课配套演示：同一个任务，"差提示"与"好提示"各跑一次，亲眼看看差距
-# pip install openai python-dotenv
-# 需要 API Key（环境变量 OPENAI_API_KEY），未填 key 时只跑文末的离线小练
-# 注：需要 API Key，未实跑；模型名只是示例，可能已更新，按官网模型列表选一个便宜够用的
+# pip install -U openai python-dotenv
+# 需要 API Key（环境变量 DEEPSEEK_API_KEY），未填 key 时只跑文末的离线小练
+# 注：在线段需 DEEPSEEK_API_KEY，未实跑；模型名示例可能更新，以 DeepSeek 官网模型列表为准
 
 import os
 
@@ -11,20 +11,31 @@ try:
 except ImportError:
     OpenAI = None
 
-# .env 里有 OPENAI_API_KEY 的话自动读进来（没有 python-dotenv 也不影响，环境变量照常生效）
+# .env 里有 DEEPSEEK_API_KEY 的话自动读进来（没有 python-dotenv 也不影响，环境变量照常生效）
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
     pass
 
-MODEL = os.environ.get("DEMO_MODEL", "gpt-4o-mini")  # 示例名，按官网模型列表自行替换
-
-# 装了 openai 才建客户端；没装时为 None，走文末离线小练
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY")) if OpenAI else None
+# 示例名可能更新，以 DeepSeek 官网模型列表为准；需强推理可换 deepseek-v4-pro
+MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-flash")
 
 
-def ask(prompt, system=None):
+def build_client():
+    """有 Key 才构造客户端；返回 None 表示本次走离线小练。
+
+    关键修复：客户端构造必须推迟到"确认有 Key"之后——
+    若在导入期就写 OpenAI(api_key=None)，缺 Key 会当场抛异常崩掉整个脚本。
+    """
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if OpenAI is None or not api_key:
+        return None
+    # DeepSeek 兼容 openai 库：除了 Key，只需多给一个 base_url 指向它的服务器
+    return OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+
+
+def ask(client, prompt, system=None):
     """发一条提示给模型，返回回答文本。
 
     system 相当于常驻的"角色设定"，prompt 是这次的活儿。
@@ -47,16 +58,16 @@ TASK_GOOD = (
 )
 
 
-def main():
+def main(client):
     print("=" * 50)
     print("【差提示】", TASK_BAD)
     print("-" * 50)
-    print(ask(TASK_BAD))
+    print(ask(client, TASK_BAD))
     print()
     print("=" * 50)
     print("【好提示】", TASK_GOOD)
     print("-" * 50)
-    print(ask(TASK_GOOD, system="你是一位帮忙处理日常职场沟通的助手。"))
+    print(ask(client, TASK_GOOD, system="你是一位帮忙处理日常职场沟通的助手。"))
 
 
 def offline_check():
@@ -79,20 +90,23 @@ def offline_check():
 
 
 if __name__ == "__main__":
-    if OpenAI is None or not os.environ.get("OPENAI_API_KEY"):
-        print("未检测到 OPENAI_API_KEY（或还没装 openai 库）：本次只跑离线小练，不调用模型。")
-        print("配置方法：pip install openai python-dotenv，系统环境变量里加 OPENAI_API_KEY，")
-        print("或在本目录建 .env 文件写一行 OPENAI_API_KEY=sk-...（.env 别提交到 git）\n")
+    client = build_client()
+    if client is None:
+        print("未检测到 DEEPSEEK_API_KEY（或还没装 openai 库）：本次只跑离线小练，不调用模型。")
+        print("配置方法：pip install -U openai python-dotenv，系统环境变量里加 DEEPSEEK_API_KEY：")
+        print('  Windows PowerShell:  $env:DEEPSEEK_API_KEY="sk-..."')
+        print("  Mac / Linux:         export DEEPSEEK_API_KEY=sk-...")
+        print("或在本目录建 .env 文件写一行 DEEPSEEK_API_KEY=sk-...（.env 别提交到 git）\n")
         offline_check()
     else:
         try:
-            main()
+            main(client)
         except Exception as e:
             # 常见情况：key 无效 / 网络不通 / 额度用尽。别让红 traceback 吓到学生。
             msg = str(e)
             if "401" in msg or "invalid" in msg.lower():
                 print("调用失败：API Key 无效或未生效，请回第 01 课检查 Key 的创建与配置。")
             elif "429" in msg or "quota" in msg.lower() or "insufficient" in msg.lower():
-                print("调用失败：额度不足或请求太频繁，去平台确认余额与限流设置。")
+                print("调用失败：额度不足或请求太频繁，去 platform.deepseek.com 确认余额与限流设置。")
             else:
                 print(f"调用失败：网络或服务暂时不可用（{msg}）。检查网络后稍后再试。")

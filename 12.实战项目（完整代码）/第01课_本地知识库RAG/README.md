@@ -8,8 +8,9 @@
 
 - 零依赖：装好 Python 3.9+ 即可，不需要 pip install 任何东西。
 - 可选升级：想让模型把资料揉成更通顺的回答——
-  - `pip install openai`
-  - 设置环境变量 `OPENAI_API_KEY`（没配也能跑，程序自动用抽取式回答兜底）
+- `pip install openai python-dotenv`
+- 设置环境变量 `DEEPSEEK_API_KEY`（生成段连 DeepSeek，模型默认 deepseek-flash，可用 `DEEPSEEK_MODEL` 覆盖；没配也能跑，程序自动用抽取式回答兜底）
+- 检索用本地 bigrams 字词重合度：DeepSeek 无 embedding 接口，生产可换 BGE/通义/智谱等嵌入模型
 
 ## 怎么跑
 

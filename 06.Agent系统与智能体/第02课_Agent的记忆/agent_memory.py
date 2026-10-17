@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 用途：演示 Agent 的记忆——短期记忆怎么攒、怎么被窗口截断、跨会话怎么隔离。
-# 依赖：第 1 部分仅 Python 标准库；第 2 部分需 pip install openai langchain langgraph
+# 依赖：第 1 部分仅 Python 标准库；第 2 部分需 pip install openai langchain langgraph langchain-openai
 #       （缺库或缺 API Key 会打印中文提示并优雅跳过；真实调用段需 Key，未实跑）
 
 import sys
@@ -71,16 +71,24 @@ def part2_real_framework():
     try:
         from langchain.agents import create_agent
         from langgraph.checkpoint.memory import InMemorySaver
+        from langchain_openai import ChatOpenAI
     except ImportError:
-        print("[跳过] 第2部分需要：pip install openai langchain langgraph")
+        print("[跳过] 第2部分需要：pip install openai langchain langgraph langchain-openai")
         return
     import os
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("[跳过] 未检测到环境变量 OPENAI_API_KEY，真实调用段不运行（未实跑）。")
+    if not os.environ.get("DEEPSEEK_API_KEY"):
+        print("[跳过] 未检测到环境变量 DEEPSEEK_API_KEY，真实调用段不运行（未实跑）。")
+        print("       配置方法：PowerShell 执行 $env:DEEPSEEK_API_KEY=\"sk-...\"，")
+        print("       或写入项目根目录 .env；Key 在 platform.deepseek.com 注册获取。")
         return
     try:
+        model = ChatOpenAI(                    # DeepSeek 兼容 OpenAI 协议
+            model="deepseek-flash",            # 示例模型名可能更新，以 DeepSeek 官网模型列表为准
+            api_key=os.environ.get("DEEPSEEK_API_KEY"),
+            base_url="https://api.deepseek.com",
+        )
         agent = create_agent(
-            "openai:gpt-4.1-mini",       # 示例模型名，请按官网当前列表替换
+            model,
             tools=[],
             checkpointer=InMemorySaver(),  # 记忆保管员
         )

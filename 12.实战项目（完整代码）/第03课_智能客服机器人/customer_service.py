@@ -4,8 +4,8 @@
 零依赖可跑（纯标准库）：
     python customer_service.py        # 进入命令行对话（输入 q 退出）
     python customer_service.py demo   # 自动轮播三类典型对话
-可选升级（需 API Key，未实跑）：pip install openai 后 polish_with_llm() 可让模型
-把"模板骨架 + 检索到的制度"润色成更有温度的回复。
+可选升级（需 DEEPSEEK_API_KEY，未实跑）：pip install openai 后 polish_with_llm() 可调
+DeepSeek（openai SDK 兼容方式）把"模板骨架 + 检索到的制度"润色成更有温度的回复。
 """
 
 import os
@@ -65,17 +65,19 @@ def lookup(msg):
 
 
 def polish_with_llm(question, fact):
-    """可选升级：让模型把制度润色得更有温度。缺 Key/缺库/失败都退回 None。"""
-    if not os.environ.get("OPENAI_API_KEY"):
+    """可选升级：调 DeepSeek 把制度润色得更有温度。缺 Key/缺库/失败都退回 None。"""
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
         return None
     try:
-        from openai import OpenAI  # pip install openai
+        from openai import OpenAI  # pip install openai python-dotenv
     except ImportError:
         return None
     try:
-        client = OpenAI()
+        client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
+        # 默认 deepseek-flash，可用 DEEPSEEK_MODEL 覆盖；示例名可能更新，以 DeepSeek 官网模型列表为准
         resp = client.responses.create(
-            model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),  # 示例名，按官网当前列表替换
+            model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),
             input=(
                 "你是公司客服。按下面的固定口吻回复用户，答案必须只用给定制度内容，"
                 "制度里没有的不要编。\n"

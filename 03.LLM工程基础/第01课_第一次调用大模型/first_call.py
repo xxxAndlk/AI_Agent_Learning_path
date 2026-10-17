@@ -1,5 +1,5 @@
 # first_call.py —— 第一次调用大模型：向 DeepSeek 发一句话，并把回答打印出来
-# 前置：已激活虚拟环境、pip install openai python-dotenv、已设置环境变量 DEEPSEEK_API_KEY
+# 前置：已激活虚拟环境、pip install -U openai python-dotenv、已设置环境变量 DEEPSEEK_API_KEY
 import os
 import sys
 
@@ -14,7 +14,7 @@ except ImportError:
 try:
     from openai import OpenAI
 except ImportError:
-    print("还没安装 openai 库：请先激活虚拟环境（命令行前有 (.venv)），再运行 pip install openai")
+    print("还没安装 openai 库：请先激活虚拟环境（命令行前有 (.venv)），再运行 pip install -U openai")
     sys.exit(1)
 
 # 调用失败时的几类常见错误，各自给一句中文提示，不让你直面英文报错

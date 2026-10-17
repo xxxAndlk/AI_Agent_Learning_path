@@ -106,18 +106,15 @@ if __name__ == "__main__":
     part1()
     part2()
 
-# ---------- 第三段：换真实模型、接进链（需 API Key，本机未实跑） ----------
-# ToyEmbeddings 换成真实嵌入服务即可，检索器用法一行不改——统一接口的意义就在这。
-# Key 一律从环境变量读（可配合 python-dotenv 从 .env 读，.env 不要提交），严禁写死：
+# ---------- 第三段：换真实嵌入模型、接进链（需另行配置，本机未实跑） ----------
+# 注意：DeepSeek 不提供 embedding 接口，教学用上面的本地向量演示；生产可换 BGE、
+# 通义千问、智谱等真实嵌入服务（各装对应集成包、用各家的 Key，Key 一律从环境变量读）。
+# ToyEmbeddings 换成真实嵌入模型即可，检索器用法一行不改——统一接口的意义就在这：
 #
-#   import os
-#   from langchain_openai import OpenAIEmbeddings
-#
-#   embeddings = OpenAIEmbeddings(
-#       model="text-embedding-3-small",  # 示例名，可能已更新：按官网模型列表选
-#       api_key=os.environ.get("OPENAI_API_KEY"),  # 没设置则为 None，调用时才会报错
-#   )
+#   # 伪代码示意（不针对具体厂商）：
+#   embeddings = SomeEmbeddings(api_key=os.environ["SOME_EMBED_API_KEY"], model="该服务的嵌入模型名")
 #   store = InMemoryVectorStore(embeddings)
 #   retriever = store.as_retriever(search_kwargs={"k": 4})
 #
-# 接完整 RAG 链（检索→拼资料→填提示→问模型）见讲义第四节的 rag_chain，同样需 Key。
+# 接完整 RAG 链（检索→拼资料→填提示→问模型）见讲义第四节的 rag_chain，其中模型调用
+# 可用 DeepSeek（ChatOpenAI + base_url="https://api.deepseek.com"，写法见其他课示例）。
